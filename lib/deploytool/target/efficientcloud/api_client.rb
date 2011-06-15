@@ -64,6 +64,10 @@ class DeployTool::Target::EfficientCloud
           puts "...possibly done."
           break
         end
+        if doc.elements["deploy/message"].text == 'nojob'
+          puts "FINISHED after #{i} seconds!"
+          break
+        end
         
         status = doc.elements["deploy/message"].text.gsub('["', '').gsub('"]', '')
         logs = doc.elements["deploy/logs"].text rescue nil
@@ -81,3 +85,4 @@ class DeployTool::Target::EfficientCloud
     end
   end
 end
+
