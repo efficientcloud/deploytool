@@ -16,7 +16,7 @@ class DeployTool::Command
         exit
       end
       
-      target = DeployTool::Target::Heroku.new(target) # target['type']
+      target = DeployTool::Target::EfficientCloud.new(target) # target['type']
       target.push
     end
     

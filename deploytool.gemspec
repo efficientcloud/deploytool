@@ -15,4 +15,7 @@ Gem::Specification.new do |gem|
   gem.files = %x{ git ls-files }.split("\n").select { |d| d =~ %r{^(README|bin/|data/|ext/|lib/|spec/|test/)} }
   
   gem.add_dependency "inifile",        ">= 0.4.1"
+  gem.add_dependency "addressable"
+  gem.add_dependency "multipart-post"
+  gem.add_dependency "highline"
 end
