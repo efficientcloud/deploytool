@@ -75,8 +75,10 @@ class DeployTool::Target::EfficientCloud
           puts logs
         else
           if status == 'error'
-            puts "ERROR after #{i} seconds!"
-            exit 2
+            if logs.nil? or logs.empty?
+              puts "ERROR after #{i} seconds!"
+              exit 2
+            end
           elsif status != 'build'
             puts "#{i}: #{status}"
           end
