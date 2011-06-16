@@ -2,6 +2,7 @@ require 'rexml/document'
 require 'addressable/uri'
 require 'net/http'
 require 'net/http/post/multipart'
+require 'fileutils'
 
 class DeployTool::Target::EfficientCloud
   class ApiClient
@@ -33,8 +34,7 @@ class DeployTool::Target::EfficientCloud
     
     def upload
       # TODO: FAIL if no Rakefile in current directory
-      
-      puts `find . \! -name ".git*" \! -name ".deployrc" | zip -9q .ecli-upload.zip -@`
+      FileUtils.rm_f ".ecli-upload.zip"
       initial_response = nil
       File.open(".ecli-upload.zip") do |file|
         initial_response = call :post, 'upload', {:code => UploadIO.new(file, "application/zip", "ecli-upload.zip")}
