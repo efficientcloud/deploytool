@@ -34,7 +34,7 @@ class DeployTool::Target::EfficientCloud
     def upload
       # TODO: FAIL if no Rakefile in current directory
       
-      puts `find . | zip -9q .ecli-upload.zip -@`
+      puts `find . \! -name ".git*" \! -name ".deployrc" | zip -9q .ecli-upload.zip -@`
       initial_response = nil
       File.open(".ecli-upload.zip") do |file|
         initial_response = call :post, 'upload', {:code => UploadIO.new(file, "application/zip", "ecli-upload.zip")}
