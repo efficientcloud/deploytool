@@ -3,6 +3,8 @@ require 'addressable/uri'
 require 'net/http'
 require 'net/http/post/multipart'
 require 'fileutils'
+require 'tempfile'
+require 'zip'
 
 class DeployTool::Target::EfficientCloud
   class ApiClient
@@ -33,14 +35,18 @@ class DeployTool::Target::EfficientCloud
     end
     
     def upload
-      # TODO: FAIL if no Rakefile in current directory
-      FileUtils.rm_f ".ecli-upload.zip"
-      output = `find . \! -name ".git*" \! -name ".deployrc" | zip -9q .ecli-upload.zip -@`
-      puts output unless output.strip.empty?
-      initial_response = nil
-      File.open(".ecli-upload.zip") do |file|
-        initial_response = call :post, 'upload', {:code => UploadIO.new(file, "application/zip", "ecli-upload.zip")}
+      appfiles = Dir.glob('**/*', File::FNM_DOTMATCH).reject {|f| File.directory?(f) || f[/(^|\/).{1,2}$/] || f[/^.git\//] || f[/^.deployrc$/] || f[/(^|\/).DS_Store$/] }
+      
+      # Construct a temporary zipfile
+      tempfile = Tempfile.open("ecli-upload.zip")
+      Zip::ZipOutputStream.open(tempfile.path) do |z|
+        appfiles.each do |appfile|
+          z.put_next_entry appfile
+          z.print IO.read(appfile)
+        end
       end
+      
+      initial_response = call :post, 'upload', {:code => UploadIO.new(tempfile, "application/zip", "ecli-upload.zip")}
       doc = REXML::Document.new initial_response
       doc.elements["code/code-token"].text
     end

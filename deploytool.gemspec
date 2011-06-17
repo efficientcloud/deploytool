@@ -18,4 +18,5 @@ Gem::Specification.new do |gem|
   gem.add_dependency "addressable"
   gem.add_dependency "multipart-post"
   gem.add_dependency "highline"
+  gem.add_dependency "zip"
 end
