@@ -19,4 +19,6 @@ Gem::Specification.new do |gem|
   gem.add_dependency "multipart-post"
   gem.add_dependency "highline"
   gem.add_dependency "zip"
+  gem.add_dependency "heroku"
+  gem.add_dependency "json"
 end

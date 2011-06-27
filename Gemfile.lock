@@ -1,0 +1,60 @@
+PATH
+  remote: .
+  specs:
+    deploytool (0.9.0)
+      addressable
+      heroku
+      highline
+      inifile (>= 0.4.1)
+      json
+      multipart-post
+      zip
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    addressable (2.2.6)
+    configuration (0.0.5)
+    diff-lcs (1.1.2)
+    heroku (1.10.2)
+      json_pure (>= 1.2.0, < 1.5.0)
+      launchy (~> 0.3.2)
+      rest-client (~> 1.4.0)
+    highline (1.6.2)
+    inifile (0.4.1)
+    json (1.4.6)
+    json_pure (1.4.6)
+    launchy (0.3.3)
+      configuration (>= 0.0.5)
+      rake (>= 0.8.1)
+    mime-types (1.16)
+    multipart-post (1.1.2)
+    rake (0.9.0)
+    rest-client (1.4.2)
+      mime-types (>= 1.16)
+    rr (1.0.2)
+    rspec (2.6.0)
+      rspec-core (~> 2.6.0)
+      rspec-expectations (~> 2.6.0)
+      rspec-mocks (~> 2.6.0)
+    rspec-core (2.6.0)
+    rspec-expectations (2.6.0)
+      diff-lcs (~> 1.1.2)
+    rspec-mocks (2.6.0)
+    zip (2.0.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  addressable
+  deploytool!
+  heroku
+  highline
+  inifile (>= 0.4.1)
+  json
+  multipart-post
+  rake (>= 0.8.7)
+  rr
+  rspec (>= 2.0)
+  zip

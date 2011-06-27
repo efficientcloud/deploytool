@@ -1,6 +1,9 @@
 require 'inifile'
 
 class DeployTool::Config
+  def self.all
+    @@configfile.to_h
+  end
   def self.[](section)
     @@configfile[section]
   end

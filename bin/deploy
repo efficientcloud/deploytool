@@ -3,12 +3,20 @@
 lib = File.expand_path(File.dirname(__FILE__) + '/../lib')
 $LOAD_PATH.unshift(lib) if File.directory?(lib) && !$LOAD_PATH.include?(lib)
 
+require 'logger'
 require 'rubygems'
 require 'deploytool'
 require 'deploytool/command'
 
+$logger = Logger.new STDOUT
+$logger.formatter = proc { |severity, datetime, progname, msg|
+  next if severity == "DEBUG"
+  "#{msg}\n"
+}
+HighLine.track_eof = false
+
 args = ARGV.dup
 ARGV.clear
-command = args.shift.strip rescue '--help'
+command = args.shift.strip rescue '--list'
 
 DeployTool::Command.run(command, args)

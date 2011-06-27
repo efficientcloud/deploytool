@@ -1,12 +1,17 @@
 require 'highline'
 
 class DeployTool::Target::EfficientCloud < DeployTool::Target
-  def self.matches?(target_name)
-    true # FIXME
+  def self.matches?(target_spec)
+    app_id, api_server = target_spec.split('@')
+    get_json_resource("http://%s/info" % api_server)['name'] == "efc" rescue false
   end
   
   def to_h
     {:type => "EfficientCloud", :api_server => @api_client.server, :app_id => @api_client.app_id, :email => @api_client.email, :password => @api_client.password}
+  end
+  
+  def to_s
+    "app%s@%s (EFC-based platform)" % [@api_client.app_id, @api_client.server]
   end
   
   def initialize(options)
