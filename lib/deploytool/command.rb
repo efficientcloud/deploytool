@@ -3,8 +3,14 @@ class DeployTool::Command
     DeployTool::Config.load(".deployrc")
     
     if command == "--help"
-      puts "Usage:"
-      puts "  deploy --add production myapp.heroku.com"
+      puts "Deploytool Usage Instructions"
+      puts ""
+      puts "Add a target:"
+      puts "  deploy --add production app1@demo.efficientcloud.com"
+      puts "  deploy --add staging myapp.heroku.com"
+      puts "  deploy --add failover api.cloudfoundry.com"
+      puts ""
+      puts "Deploy the current directory to the target:"
       puts "  deploy production"
     elsif command == "--add"
       DeployTool::Config[args[0]] = DeployTool::Target.find(args[1]).to_h
