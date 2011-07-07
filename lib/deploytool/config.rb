@@ -16,6 +16,6 @@ class DeployTool::Config
   end
   
   def self.save
-    @@configfile.save
+    @@configfile.save unless @@configfile.to_h.empty?
   end
 end

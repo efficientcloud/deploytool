@@ -17,6 +17,6 @@ HighLine.track_eof = false
 
 args = ARGV.dup
 ARGV.clear
-command = args.shift.strip rescue '--list'
+command = args.shift.strip rescue 'help'
 
 DeployTool::Command.run(command, args)
