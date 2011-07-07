@@ -22,8 +22,7 @@ describe DeployTool::Target do
       end
     end
     
-    #["api.srv.io", "srv.io", "app123.srv.io"].each do |target_spec|
-    ["app1@demo.efficientcloud.com:9100"].each do |target_spec|
+    ["app10000@api.srv.io", "app10000@srv.io", "app10000@app123.srv.io"].each do |target_spec|
       it "should detect #{target_spec} as an Efficient Cloud target" do
         DeployTool::Target.find(target_spec).class.should == DeployTool::Target::EfficientCloud
       end

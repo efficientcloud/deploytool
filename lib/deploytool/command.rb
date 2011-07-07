@@ -26,7 +26,7 @@ class DeployTool::Command
       puts "Registered Targets:"
       DeployTool::Config.all.each do |target_name, target|
         target = DeployTool::Target.from_config(target)
-        puts "  %s\t%s" % [target_name, target.to_s]
+        puts "  %s%s" % [target_name.ljust(15), target.to_s]
       end
     else
       target_name = command == "to" ? args[0] : command

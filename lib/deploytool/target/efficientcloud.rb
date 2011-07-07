@@ -1,9 +1,21 @@
 require 'highline'
 
 class DeployTool::Target::EfficientCloud < DeployTool::Target
+  def self.parse_target_spec(target_spec)
+    app_id, server = target_spec.split('@')
+    return if server.nil?
+    [server, 'api.' + server, 'api.' + server.split('.', 2).last].each do |api_server|
+      begin
+        return [app_id.gsub('app', '').to_i, api_server] if get_json_resource("http://%s/info" % api_server)['name'] == "efc"
+      rescue => e
+        $logger.debug "Exception: %s\n%s" % [e.message, e.backtrace.join("\n")]
+      end
+    end
+    nil
+  end
+  
   def self.matches?(target_spec)
-    app_id, api_server = target_spec.split('@')
-    get_json_resource("http://%s/info" % api_server)['name'] == "efc" rescue false
+    return true if parse_target_spec(target_spec)
   end
   
   def to_h
@@ -18,13 +30,11 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
     @api_client = ApiClient.new(options['api_server'], options['app_id'], options['email'], options['password'])
   end
   
-  def self.create(target_app)
-    puts "Please specify your controlpanel login information" % target_app
+  def self.create(target_spec)
+    puts "Please specify your controlpanel login information"
     email =    HighLine.new.ask("E-mail:   ")
     password = HighLine.new.ask("Password: ") {|q| q.echo = "*" }
-    
-    app_id, api_server = target_app.split('@')
-    app_id = app_id.gsub('app', '').to_i
+    app_id, api_server = parse_target_spec(target_spec)
     EfficientCloud.new('api_server' => api_server, 'app_id' => app_id, 'email' => email, 'password' => password)
   end
   
