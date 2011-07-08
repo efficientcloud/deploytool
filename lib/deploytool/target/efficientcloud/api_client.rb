@@ -27,11 +27,12 @@ class DeployTool::Target::EfficientCloud
         url.query_values = data
         res = Net::HTTP.get_response(url)
       end
-      if res.code != '200'
-        puts "Calling '%s' returned %s, exiting" % [url, res.code, res.body]
-        exit 2
+      case res
+      when Net::HTTPSuccess, Net::HTTPRedirection
+        res.body
+      else  
+        res.error!
       end
-      res.body
     end
     
     def upload
@@ -49,6 +50,18 @@ class DeployTool::Target::EfficientCloud
       initial_response = call :post, 'upload', {:code => UploadIO.new(tempfile, "application/zip", "ecli-upload.zip")}
       doc = REXML::Document.new initial_response
       doc.elements["code/code-token"].text
+    rescue Net::HTTPServerException => e
+      case e.response
+      when Net::HTTPNotFound
+        puts "ERROR: Application app%d.%s couldn't be found." % [@app_id, @server.gsub('api.', '')]
+      when Net::HTTPUnauthorized
+        puts "ERROR: You're not authorized to update app%d.%s." % [@app_id, @server.gsub('api.', '')]
+      else
+        raise e
+      end
+      puts ""
+      puts "Please check the controlpanel for update instructions."
+      exit 2
     end
     
     def deploy(code_token)
