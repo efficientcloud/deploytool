@@ -43,5 +43,29 @@ class DeployTool::Command
     end
     
     DeployTool::Config.save
+  rescue Net::HTTPServerException => e
+    puts "ERROR: HTTP call returned %s %s" % [e.response.code, e.response.message]
+    puts ""
+    if target
+      puts "Target:"
+      target.to_h.each do |k, v|
+        next if k.to_sym == :password
+        puts "  %s = %s" % [k, v]
+      end
+    end
+    puts ""
+    puts "Backtrace:"
+    puts "  " + e.backtrace.join("\n  ")
+    puts ""
+    puts "Response:"
+    e.response.each_header do |k, v|
+      puts "  %s: %s" % [k, v]
+    end
+    puts ""
+    puts "  " + e.response.body.gsub("\n", "\n  ")
+    puts "!!!"
+    puts "Please report the above output at http://bit.ly/deploytool-new-issue"
+    puts "!!!"
+    exit 2
   end
 end
