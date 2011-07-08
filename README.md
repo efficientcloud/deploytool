@@ -1,6 +1,6 @@
 # deploytool
 
-Deployment tool for Platform-as-a-Service providers, supports multi-stage deploys (e.g. for staging environments).
+Deployment tool for Platform-as-a-Service providers, with special support for multi-stage deploys (e.g. for staging environments).
 
 Platforms currently supported:
 * Heroku
@@ -10,15 +10,13 @@ Platforms currently supported:
 ## Deploying a Ruby on Rails app
 
     gem install deploytool
-    deploy --add production portfolio.heroku.com
-    deploy --add staging portfolio.vcap.me
+    deploy add production portfolio.heroku.com
+    deploy add staging portfolio.vcap.me
     deploy production
 
 ## Config file
 
 deploy keeps a local config file .deployrc within every top-level sourcecode directory (determined by location of .git directory).
-
-It won't cache any passwords, but will cache authentication tokens if supported by the target platform.
 
 ## Legalese
 

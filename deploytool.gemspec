@@ -5,7 +5,7 @@ Gem::Specification.new do |gem|
   gem.name    = "deploytool"
   gem.version = DeployTool::VERSION
 
-  gem.author      = "Platform Directory"
+  gem.author      = "Efficient Cloud Ltd"
   gem.email       = "hello@platformdirectory.com"
   gem.homepage    = "http://platformdirectory.com/"
   gem.summary     = "Multi-platform deployment tool."
