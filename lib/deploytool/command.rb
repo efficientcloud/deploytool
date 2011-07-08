@@ -15,6 +15,18 @@ class DeployTool::Command
       puts "Deploy the current directory to the target:"
       puts "  deploy to production"
     elsif command == "add"
+      if args[0].nil?
+        puts "ERROR: Missing target name."
+        puts ""
+        puts "Use \"deploy help\" if you're lost."
+        exit
+      end
+      if args[1].nil?
+        puts "ERROR: Missing target specification."
+        puts ""
+        puts "Use \"deploy help\" if you're lost."
+        exit
+      end
       unless target = DeployTool::Target.find(args[1])
         puts "ERROR: Couldn't find provider for target \"#{args[1]}\""
         puts ""
