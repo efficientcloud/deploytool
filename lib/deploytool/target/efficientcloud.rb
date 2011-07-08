@@ -9,7 +9,7 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
     end
     [server, 'api.' + server, 'api.' + server.split('.', 2).last].each do |api_server|
       begin
-        return true if check_version(api_server)
+        return [app_id.gsub('app', '').to_i, api_server] if check_version(api_server)
       rescue => e
         puts e
       end
