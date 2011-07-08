@@ -1,6 +1,7 @@
 class DeployTool::Target::CloudFoundry < DeployTool::Target
   def self.parse_target_spec(target_spec)
     app_name, server = target_spec.split('.', 2)
+    return false if server.nil? or app_name.nil?
     # Test through multiple versions of API server URLs
     [target_spec, 'api.' + target_spec, 'api.' + server].each do |api_server|
       begin
