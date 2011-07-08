@@ -2,8 +2,10 @@ require 'highline'
 
 class DeployTool::Target::EfficientCloud < DeployTool::Target
   def self.parse_target_spec(target_spec)
-    app_id, server = target_spec.split('@')
-    return if server.nil?
+    server, app_id = target_spec.split('@').reverse
+    if app_id.nil?
+      app_id = server.split('.', 2).first
+    end
     [server, 'api.' + server, 'api.' + server.split('.', 2).last].each do |api_server|
       begin
         return [app_id.gsub('app', '').to_i, api_server] if get_json_resource("http://%s/info" % api_server)['name'] == "efc"
