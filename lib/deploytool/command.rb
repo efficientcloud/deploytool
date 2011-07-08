@@ -51,7 +51,12 @@ class DeployTool::Command
       end
       
       target = DeployTool::Target.from_config(target)
-      target.push
+      begin
+        target.push
+      rescue => e
+        puts e
+        exit 2
+      end
     end
     
     DeployTool::Config.save

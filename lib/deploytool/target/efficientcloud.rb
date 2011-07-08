@@ -1,6 +1,7 @@
 require 'highline'
 
 class DeployTool::Target::EfficientCloud < DeployTool::Target
+  SUPPORTED_API_VERSION = 1
   def self.parse_target_spec(target_spec)
     server, app_id = target_spec.split('@').reverse
     if app_id.nil?
@@ -8,9 +9,9 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
     end
     [server, 'api.' + server, 'api.' + server.split('.', 2).last].each do |api_server|
       begin
-        return [app_id.gsub('app', '').to_i, api_server] if get_json_resource("http://%s/info" % api_server)['name'] == "efc"
+        return true if check_version(api_server)
       rescue => e
-        $logger.debug "Exception: %s\n%s" % [e.message, e.backtrace.join("\n")]
+        puts e
       end
     end
     nil
@@ -29,9 +30,25 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
   end
   
   def initialize(options)
+    @api_server = options['api_server']
     @api_client = ApiClient.new(options['api_server'], options['app_id'], options['email'], options['password'])
   end
-  
+
+  def self.check_version(api_server)
+    begin
+      info = get_json_resource("http://%s/info" % api_server)
+    rescue => e
+      $logger.debug "Exception: %s\n%s" % [e.message, e.backtrace.join("\n")]
+      return false
+    end
+    return false unless info['name'] == "efc"
+
+    if info['api_version'] > SUPPORTED_API_VERSION
+      raise "ERROR: This version of deploytool is outdated.\nThis server requires at least API Version #{info['api_version']}."
+    end
+    return true
+  end
+
   def self.create(target_spec)
     puts "Please specify your controlpanel login information"
     email =    HighLine.new.ask("E-mail:   ")
@@ -41,6 +58,7 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
   end
   
   def push
+    self.class.check_version(@api_server)
     code_token = @api_client.upload
     deploy_token = @api_client.deploy(code_token)
     @api_client.deploy_status(deploy_token) # Blocks till deploy is done
