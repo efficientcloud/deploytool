@@ -41,7 +41,8 @@ class DeployTool::Command
         puts "  %s%s" % [target_name.ljust(15), target.to_s]
       end
     else
-      target_name = command == "to" ? args[0] : command
+      args.unshift command unless command == "to"
+      target_name = args[0]
       
       unless (target = DeployTool::Config[target_name]) && !target.nil? && target.size > 0
         puts "ERROR: Couldn't find target: #{target_name}"
@@ -50,9 +51,12 @@ class DeployTool::Command
         exit
       end
       
+      opts = {}
+      opts[:timing] = true if args.include?("--timing")
+
       target = DeployTool::Target.from_config(target)
       begin
-        target.push
+        exit target.push opts
       rescue => e
         puts e
         exit 2

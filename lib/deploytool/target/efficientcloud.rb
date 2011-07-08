@@ -57,11 +57,11 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
     EfficientCloud.new('api_server' => api_server, 'app_id' => app_id, 'email' => email, 'password' => password)
   end
   
-  def push
+  def push(opts)
     self.class.check_version(@api_server)
     code_token = @api_client.upload
     deploy_token = @api_client.deploy(code_token)
-    @api_client.deploy_status(deploy_token) # Blocks till deploy is done
+    @api_client.deploy_status(deploy_token, opts) # Blocks till deploy is done
   end
 end
 

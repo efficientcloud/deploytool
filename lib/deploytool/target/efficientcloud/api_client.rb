@@ -71,12 +71,20 @@ class DeployTool::Target::EfficientCloud
       puts deploy_token.inspect
       deploy_token
     end
-    
-    def deploy_status(deploy_token)
-      i = 0
+
+    def save_timing_data(data)
+      File.open('deploytool-timingdata-%d.json' % (Time.now), 'w') do |f|
+        f.puts data.to_json
+      end
+    end
+
+    def deploy_status(deploy_token, opts)
+      start = Time.now
+      timing = []
+      rc = 0
+
       while true
         sleep 1
-        i += 1
         resp = call :get, 'deploy_status', {:deploy_token => deploy_token}
         doc = REXML::Document.new resp
         
@@ -86,7 +94,7 @@ class DeployTool::Target::EfficientCloud
           break
         end
         if doc.elements["deploy/message"].text == 'nojob'
-          puts "FINISHED after #{i} seconds!"
+          puts "FINISHED after %d seconds!" % (Time.now-start)
           break
         end
         
@@ -94,17 +102,22 @@ class DeployTool::Target::EfficientCloud
         logs = doc.elements["deploy/logs"].text rescue nil
         if logs
           puts logs
+          timing << [Time.now-start, status, logs]
         else
+          timing << [Time.now-start, status]
           if status == 'error'
             if logs.nil? or logs.empty?
-              puts "ERROR after #{i} seconds!"
-              exit 2
+              puts "ERROR after %d seconds!" % (Time.now-start)
+              rc = 2
+              break
             end
           elsif status != 'build'
-            puts "#{i}: #{status}"
+            puts "%d: %s" % [Time.now-start, status]
           end
         end
       end
+      save_timing_data timing if opts[:timing]
+      rc
     end
   end
 end
