@@ -58,7 +58,7 @@ class DeployTool::Command
 
       target = DeployTool::Target.from_config(target)
       begin
-        exit target.push opts
+        target.push(opts)
       rescue => e
         puts e
         exit 2
@@ -67,28 +67,22 @@ class DeployTool::Command
     
     DeployTool::Config.save
   rescue Net::HTTPServerException => e
-    puts "ERROR: HTTP call returned %s %s" % [e.response.code, e.response.message]
-    puts ""
+    $logger.info "ERROR: HTTP call returned %s %s" % [e.response.code, e.response.message]
     if target
-      puts "Target:"
+      $logger.debug "\nTarget:"
       target.to_h.each do |k, v|
         next if k.to_sym == :password
-        puts "  %s = %s" % [k, v]
+        $logger.debug "  %s = %s" % [k, v]
       end
     end
-    puts ""
-    puts "Backtrace:"
-    puts "  " + e.backtrace.join("\n  ")
-    puts ""
-    puts "Response:"
+    $logger.debug "\nBacktrace:"
+    $logger.debug "  " + e.backtrace.join("\n  ")
+    $logger.debug "\nResponse:"
     e.response.each_header do |k, v|
-      puts "  %s: %s" % [k, v]
+      $logger.debug "  %s: %s" % [k, v]
     end
-    puts ""
-    puts "  " + e.response.body.gsub("\n", "\n  ")
-    puts "!!!"
-    puts "Please report the above output at http://bit.ly/deploytool-new-issue"
-    puts "!!!"
+    $logger.debug "\n  " + e.response.body.gsub("\n", "\n  ")
+    $logger.info "\nPlease run again with \"--debug\" and report the output at http://bit.ly/deploytool-new-issue"
     exit 2
   end
   
@@ -96,19 +90,19 @@ class DeployTool::Command
   # and switches to the top-level if that's the case
   def self.change_to_toplevel_dir!
     indicators = [".git", "Gemfile", "LICENSE", "test"]
-  
+    
     timeout = 10
     path = Dir.pwd
     begin
       indicators.each do |indicator|
         next unless File.exists?(File.join(path, indicator))
         
-        puts "DEBUG: Found correct top-level directory %s, switching working directory." % [path] unless path == Dir.pwd
+        $logger.debug "Found correct top-level directory %s, switching working directory." % [path] unless path == Dir.pwd
         Dir.chdir path
         return
       end
     end until (path = File.dirname(path)) == "/" || (timeout -= 1) == 0
 
-    puts "DEBUG: Couldn't locate top-level directory (traversed until %s), falling back to %s" % [path, Dir.pwd]
+    $logger.debug "DEBUG: Couldn't locate top-level directory (traversed until %s), falling back to %s" % [path, Dir.pwd]
   end
 end

@@ -44,13 +44,13 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
     return false unless info && info['name'] == "efc"
 
     if info['api_version'] > SUPPORTED_API_VERSION
-      raise "ERROR: This version of deploytool is outdated.\nThis server requires at least API Version #{info['api_version']}."
+      $logger.error "This version of deploytool is outdated.\nThis server requires at least API Version #{info['api_version']}."
     end
     return true
   end
 
   def self.create(target_spec)
-    puts "Please specify your controlpanel login information"
+    $logger.info "Please specify your controlpanel login information"
     email =    HighLine.new.ask("E-mail:   ")
     password = HighLine.new.ask("Password: ") {|q| q.echo = "*" }
     app_id, api_server = parse_target_spec(target_spec)

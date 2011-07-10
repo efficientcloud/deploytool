@@ -9,10 +9,14 @@ require 'deploytool'
 require 'deploytool/command'
 
 $logger = Logger.new STDOUT
-$logger.formatter = proc { |severity, datetime, progname, msg|
+$logger.formatter = proc do |severity, datetime, progname, msg|
   next if severity == "DEBUG"
-  "#{msg}\n"
-}
+  if severity == "ERROR"
+    "ERROR: #{msg}\n"
+  else
+    "#{msg}\n"
+  end
+end
 HighLine.track_eof = false
 
 args = ARGV.dup

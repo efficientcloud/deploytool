@@ -47,20 +47,20 @@ class DeployTool::Target::EfficientCloud
         end
       end
       
+      puts "-----> Uploading %s code tarball..." % human_filesize(tempfile.path)
       initial_response = call :post, 'upload', {:code => UploadIO.new(tempfile, "application/zip", "ecli-upload.zip")}
       doc = REXML::Document.new initial_response
       doc.elements["code/code-token"].text
     rescue Net::HTTPServerException => e
       case e.response
       when Net::HTTPNotFound
-        puts "ERROR: Application app%d.%s couldn't be found." % [@app_id, @server.gsub('api.', '')]
+        $logger.error "Application app%d.%s couldn't be found." % [@app_id, @server.gsub('api.', '')]
       when Net::HTTPUnauthorized
-        puts "ERROR: You're not authorized to update app%d.%s." % [@app_id, @server.gsub('api.', '')]
+        $logger.error "You're not authorized to update app%d.%s." % [@app_id, @server.gsub('api.', '')]
       else
         raise e
       end
-      puts ""
-      puts "Please check the controlpanel for update instructions."
+      $logger.info "\nPlease check the controlpanel for update instructions."
       exit 2
     end
     
@@ -68,7 +68,6 @@ class DeployTool::Target::EfficientCloud
       initial_response = call :post, 'deploy', {:code_token => code_token}
       doc = REXML::Document.new initial_response
       deploy_token = doc.elements["deploy/token"].text
-      puts deploy_token.inspect
       deploy_token
     end
 
@@ -81,8 +80,9 @@ class DeployTool::Target::EfficientCloud
     def deploy_status(deploy_token, opts)
       start = Time.now
       timing = []
-      rc = 0
-
+      previous_status = nil
+      puts "-----> Started deployment '%s'" % deploy_token
+      
       while true
         sleep 1
         resp = call :get, 'deploy_status', {:deploy_token => deploy_token}
@@ -94,11 +94,25 @@ class DeployTool::Target::EfficientCloud
           break
         end
         if doc.elements["deploy/message"].text == 'nojob'
-          puts "FINISHED after %d seconds!" % (Time.now-start)
+          puts "\n-----> FINISHED after %d seconds!" % (Time.now-start)
           break
         end
         
         status = doc.elements["deploy/message"].text.gsub('["', '').gsub('"]', '')
+        if previous_status != status
+          case status
+          when "build"
+            puts "-----> Building/updating virtual machine..."
+          when "deploy"
+            print "-----> Copying virtual machine to app hosts"
+          when "publishing"
+            print "\n-----> Updating HTTP gateways"
+          when "cleanup"
+            print "\n-----> Removing old deployments"
+          end
+          previous_status = status
+        end
+        
         logs = doc.elements["deploy/logs"].text rescue nil
         if logs
           puts logs
@@ -107,17 +121,25 @@ class DeployTool::Target::EfficientCloud
           timing << [Time.now-start, status]
           if status == 'error'
             if logs.nil? or logs.empty?
-              puts "ERROR after %d seconds!" % (Time.now-start)
-              rc = 2
-              break
+              raise "ERROR after %d seconds!" % (Time.now-start)
+              return 2
             end
-          elsif status != 'build'
-            puts "%d: %s" % [Time.now-start, status]
+          elsif status != "build"
+            print "."
+            STDOUT.flush
           end
         end
       end
+    ensure
       save_timing_data timing if opts[:timing]
-      rc
+    end
+    
+    def human_filesize(path)
+      size = File.size(path)
+      units = %w{B KB MB GB TB}
+      e = (Math.log(size)/Math.log(1024)).floor
+      s = "%.1f" % (size.to_f / 1024**e)
+      s.sub(/\.?0*$/, units[e])
     end
   end
 end
