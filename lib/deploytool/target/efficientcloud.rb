@@ -41,7 +41,7 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
       $logger.debug "Exception: %s\n%s" % [e.message, e.backtrace.join("\n")]
       return false
     end
-    return false unless info['name'] == "efc"
+    return false unless info && info['name'] == "efc"
 
     if info['api_version'] > SUPPORTED_API_VERSION
       raise "ERROR: This version of deploytool is outdated.\nThis server requires at least API Version #{info['api_version']}."
