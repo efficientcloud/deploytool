@@ -2,6 +2,8 @@ class DeployTool::Command
   COMMANDS = ["to", "logs", "import", "export", "config"]
   
   def self.run(command, args)
+    change_to_toplevel_dir!
+    
     DeployTool::Config.load(".deployrc")
     
     if command == "help"
@@ -88,5 +90,25 @@ class DeployTool::Command
     puts "Please report the above output at http://bit.ly/deploytool-new-issue"
     puts "!!!"
     exit 2
+  end
+  
+  # Tries to figure out if we're running in a subdirectory of the source,
+  # and switches to the top-level if that's the case
+  def self.change_to_toplevel_dir!
+    indicators = [".git", "Gemfile", "LICENSE", "test"]
+  
+    timeout = 10
+    path = Dir.pwd
+    begin
+      indicators.each do |indicator|
+        next unless File.exists?(File.join(path, indicator))
+        
+        puts "DEBUG: Found correct top-level directory %s, switching working directory." % [path] unless path == Dir.pwd
+        Dir.chdir path
+        return
+      end
+    end until (path = File.dirname(path)) == "/" || (timeout -= 1) == 0
+
+    puts "DEBUG: Couldn't locate top-level directory (traversed until %s), falling back to %s" % [path, Dir.pwd]
   end
 end

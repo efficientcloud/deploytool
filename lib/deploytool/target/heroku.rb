@@ -17,6 +17,7 @@ class DeployTool::Target::Heroku < DeployTool::Target
   
   def self.create(target_name)
     app_name = target_name.gsub('.heroku.com', '')
+    # TODO: Require current directory to be a git repository
     # TODO: Ask for app name if app name is nil or www
     puts `heroku create #{app_name}`
     Heroku.new('app_name' => app_name)
