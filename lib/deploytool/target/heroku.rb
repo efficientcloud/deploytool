@@ -24,7 +24,7 @@ class DeployTool::Target::Heroku < DeployTool::Target
   end
   
   def push(opts)
-    puts `git push git@heroku.com:#{@app_name}.git master`
+    puts `git push -f git@heroku.com:#{@app_name}.git master`
     $?.exitstatus
   end
 end

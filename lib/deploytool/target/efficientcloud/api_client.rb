@@ -81,7 +81,7 @@ class DeployTool::Target::EfficientCloud
       start = Time.now
       timing = []
       previous_status = nil
-      puts "-----> Started deployment '%s'" % deploy_token
+      print "-----> Started deployment '%s'" % deploy_token
       
       while true
         sleep 1
@@ -102,7 +102,7 @@ class DeployTool::Target::EfficientCloud
         if previous_status != status
           case status
           when "build"
-            puts "-----> Building/updating virtual machine..."
+            puts "\n-----> Building/updating virtual machine..."
           when "deploy"
             print "-----> Copying virtual machine to app hosts"
           when "publishing"
@@ -122,7 +122,6 @@ class DeployTool::Target::EfficientCloud
           if status == 'error'
             if logs.nil? or logs.empty?
               raise "ERROR after %d seconds!" % (Time.now-start)
-              return 2
             end
           elsif status != "build"
             print "."

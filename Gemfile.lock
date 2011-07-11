@@ -47,7 +47,14 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  addressable
   deploytool!
+  heroku
+  highline
+  inifile (>= 0.4.1)
+  json
+  multipart-post
   rake (>= 0.8.7)
   rr
   rspec (>= 2.0)
+  zip
