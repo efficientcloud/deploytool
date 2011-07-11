@@ -115,6 +115,7 @@ class DeployTool::Target::EfficientCloud
         
         logs = doc.elements["deploy/logs"].text rescue nil
         if logs
+          puts "" if status != "build" # Add newline after the dots
           puts logs
           timing << [Time.now-start, status, logs]
         else
