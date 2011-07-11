@@ -3,9 +3,11 @@
 Deployment tool for Platform-as-a-Service providers, with special support for multi-stage deploys (e.g. for staging environments).
 
 Platforms currently supported:
+* Efficient Cloud Platforms
+
+Platform support planned:
 * Heroku
 * Cloud Foundry Platforms
-* Efficient Cloud Platforms
 
 ## Deploying a Ruby on Rails app
 
@@ -16,7 +18,7 @@ Platforms currently supported:
 
 ## Config file
 
-deploy keeps a local config file .deployrc within every top-level sourcecode directory (determined by location of .git directory).
+deploy keeps a local config file .deployrc within the top-level sourcecode directory (determined by location of .git directory).
 
 ## Legalese
 
