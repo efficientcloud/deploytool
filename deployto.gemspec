@@ -2,7 +2,7 @@ $:.unshift File.expand_path("../lib", __FILE__)
 require "deploytool/version"
 
 Gem::Specification.new do |gem|
-  gem.name    = "deploytool"
+  gem.name    = "deployto"
   gem.version = DeployTool::VERSION
 
   gem.author      = "Efficient Cloud Ltd"
