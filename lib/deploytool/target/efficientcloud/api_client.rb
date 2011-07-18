@@ -36,7 +36,11 @@ class DeployTool::Target::EfficientCloud
     end
     
     def upload
-      appfiles = Dir.glob('**/*', File::FNM_DOTMATCH).reject {|f| File.directory?(f) || f[/(^|\/).{1,2}$/] || f[/^.git\//] || f[/^.deployrc$/] || f[/(^|\/).DS_Store$/] }
+      puts "-----> Packing code tarball..."
+      
+      appfiles = Dir.glob('**/*', File::FNM_DOTMATCH).reject {|f| File.directory?(f) || f[/(^|\/).{1,2}$/] || f[/(^|\/).git\//] || f[/^.deployrc$/] || f[/^log\//] || f[/(^|\/).DS_Store$/] || f[/(^|\/)[^\/]+\.(bundle|o|so|rl)$/] }
+      
+      # TODO: Shouldn't upload anything that's in gitignore
       
       # Construct a temporary zipfile
       tempfile = Tempfile.open("ecli-upload.zip")
@@ -104,7 +108,7 @@ class DeployTool::Target::EfficientCloud
           when "build"
             puts "\n-----> Building/updating virtual machine..."
           when "deploy"
-            print "-----> Copying virtual machine to app hosts"
+            print "\n-----> Copying virtual machine to app hosts"
           when "publishing"
             print "\n-----> Updating HTTP gateways"
           when "cleanup"
