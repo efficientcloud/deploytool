@@ -38,7 +38,19 @@ class DeployTool::Target::EfficientCloud
     def upload
       puts "-----> Packing code tarball..."
       
-      appfiles = Dir.glob('**/*', File::FNM_DOTMATCH).reject {|f| File.directory?(f) || f[/(^|\/).{1,2}$/] || f[/(^|\/).git\//] || f[/^.deployrc$/] || f[/^log\//] || f[/(^|\/).DS_Store$/] || f[/(^|\/)[^\/]+\.(bundle|o|so|rl)$/] }
+      ignore_regex = [
+        /(^|\/).{1,2}$/,
+        /(^|\/).git\//,
+        /^.deployrc$/,
+        /^log\//,
+        /(^|\/).DS_Store$/,
+        /(^|\/)[^\/]+\.(bundle|o|so|rl|la|a)$/,
+        /^vendor\/gems\/[^\/]+\/ext\/lib\//
+      ]
+      
+      appfiles = Dir.glob('**/*', File::FNM_DOTMATCH)
+      appfiles.reject! {|f| File.directory?(f) }
+      appfiles.reject! {|f| ignore_regex.map {|r| !f[r] }.include?(false) }
       
       # TODO: Shouldn't upload anything that's in gitignore
       
