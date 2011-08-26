@@ -1,12 +1,7 @@
 class DeployTool::Command
   COMMANDS = ["to", "logs", "import", "export", "config"]
   
-  def self.run(command, args)
-    change_to_toplevel_dir!
-    
-    DeployTool::Config.load(".deployrc")
-    
-    if command == "help"
+  def self.print_help
       puts "Deploytool Usage Instructions"
       puts ""
       puts "Add a target:"
@@ -16,6 +11,15 @@ class DeployTool::Command
       puts ""
       puts "Deploy the current directory to the target:"
       puts "  deploy to production"
+  end
+
+  def self.run(command, args)
+    change_to_toplevel_dir!
+    
+    DeployTool::Config.load(".deployrc")
+    
+    if command == "help"
+      print_help
     elsif command == "add"
       if args[0].nil?
         puts "ERROR: Missing target name."
@@ -47,9 +51,9 @@ class DeployTool::Command
       target_name = args[0]
       
       unless (target = DeployTool::Config[target_name]) && !target.nil? && target.size > 0
-        puts "ERROR: Couldn't find target: #{target_name}"
+        puts "ERROR: Target \"#{target_name}\" is not configured"
         puts ""
-        puts "Use \"deploy help\" if you're lost."
+        print_help
         exit
       end
       
