@@ -8,16 +8,16 @@ require 'zip'
 
 class DeployTool::Target::EfficientCloud
   class ApiClient
-    attr_reader :server, :app_id, :email, :password
-    def initialize(server, app_id, email, password)
-      @app_id = app_id
+    attr_reader :server, :app_name, :email, :password
+    def initialize(server, app_name, email, password)
+      @app_name = app_name
       @server = server
       @email = email
       @password = password
     end
     
     def call(method, method_name, data = {})
-      url = Addressable::URI.parse("http://#{@server}/api/cli/v1/apps/#{@app_id}/#{method_name}")
+      url = Addressable::URI.parse("http://#{@server}/api/cli/v1/apps/#{@app_name}/#{method_name}")
       data = data.merge(:email => @email, :password => @password)
       if method == :post
         res = Net::HTTP.start(url.host, url.port) do |http|
@@ -33,6 +33,12 @@ class DeployTool::Target::EfficientCloud
       else  
         res.error!
       end
+    end
+
+    def info
+      response = call :get, 'info'
+      doc = REXML::Document.new response
+      doc.elements["app"]
     end
     
     def upload
@@ -70,16 +76,16 @@ class DeployTool::Target::EfficientCloud
     rescue Net::HTTPServerException => e
       case e.response
       when Net::HTTPNotFound
-        $logger.error "Application app%d.%s couldn't be found." % [@app_id, @server.gsub('api.', '')]
+        $logger.error "Application %s couldn't be found." % @app_name
       when Net::HTTPUnauthorized
-        $logger.error "You're not authorized to update app%d.%s." % [@app_id, @server.gsub('api.', '')]
+        $logger.error "You're not authorized to update %s." % @app_name
       else
         raise e
       end
       $logger.info "\nPlease check the controlpanel for update instructions."
       exit 2
     end
-    
+
     def deploy(code_token)
       initial_response = call :post, 'deploy', {:code_token => code_token}
       doc = REXML::Document.new initial_response
@@ -109,7 +115,7 @@ class DeployTool::Target::EfficientCloud
           puts "...possibly done."
           break
         end
-        if doc.elements["deploy/message"].text == 'nojob'
+        if doc.elements["deploy/message"].text == 'finished'
           puts "\n-----> FINISHED after %d seconds!" % (Time.now-start)
           break
         end

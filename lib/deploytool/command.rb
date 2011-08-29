@@ -39,6 +39,9 @@ class DeployTool::Command
         puts "Use \"deploy help\" if you're lost."
         exit
       end
+      if target.respond_to?(:verify)
+        target.verify
+      end
       DeployTool::Config[args[0]] = target.to_h
     elsif command == "list"
       puts "Registered Targets:"
