@@ -38,7 +38,11 @@ class DeployTool::Target::EfficientCloud
     def info
       response = call :get, 'info'
       doc = REXML::Document.new response
-      doc.elements["app"]
+      data = {}
+      doc.elements["app"].each_element do |el|
+        data[el.name.gsub('-','_').to_sym] = el.text
+      end
+      data
     end
     
     def upload

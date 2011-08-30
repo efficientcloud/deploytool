@@ -60,14 +60,27 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
 
   def verify
     self.class.check_version(@api_server)
-    info = @api_client.info
+    begin
+      info = @api_client.info
+      return true
+    rescue => e
+      $logger.debug "Exception: %s %s\n  %s" % [e.class.name, e.message, e.backtrace.join("\n  ")]
+      if e.message.include?("401 ")
+        $logger.error "Authentication failed (password wrong?)"
+      elsif e.message.include?("404 ")
+        $logger.error "Application does not exist"
+      else
+        $logger.error "Remote server said: %s" % [e.message]
+      end
+    end
+    exit 5
   end
   
   def push(opts)
     self.class.check_version(@api_server)
     info = @api_client.info
-    if info.elements['blocking_deployment']
-      $logger.error info.elements['blocking_deployment'].text
+    if info[:blocking_deployment]
+      $logger.error info[:blocking_deployment]
       exit 4
     end
     code_token = @api_client.upload

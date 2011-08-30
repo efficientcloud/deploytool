@@ -10,7 +10,6 @@ require 'deploytool/command'
 
 $logger = Logger.new STDOUT
 $logger.formatter = proc do |severity, datetime, progname, msg|
-  next if severity == "DEBUG"
   if severity == "ERROR"
     "ERROR: #{msg}\n"
   else

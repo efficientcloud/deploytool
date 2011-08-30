@@ -14,8 +14,15 @@ class DeployTool::Command
   end
 
   def self.run(command, args)
+    if args.include?("--debug")
+      args.delete("--debug")
+      $logger.level = Logger::DEBUG
+    else
+      $logger.level = Logger::INFO
+    end
+
     change_to_toplevel_dir!
-    
+
     DeployTool::Config.load(".deployrc")
     
     if command == "help"
