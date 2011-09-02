@@ -3,9 +3,11 @@
 Deployment tool for Platform-as-a-Service providers, with special support for multi-stage deploys (e.g. for staging environments).
 
 Platforms currently supported:
+
 * Efficient Cloud Platforms
 
 Platform support planned:
+
 * Heroku
 * Cloud Foundry Platforms
 
@@ -22,6 +24,6 @@ deploy keeps a local config file .deployrc within the top-level sourcecode direc
 
 ## Legalese
 
-_Copyright 2011, Efficient Cloud Ltd.
+Copyright 2011, Efficient Cloud Ltd.
 
 Released under the [MIT license](http://www.opensource.org/licenses/mit-license.php).
