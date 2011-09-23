@@ -36,9 +36,7 @@ class DeployTool::Target::EfficientCloud
           token = client.password.get_token(@email, @password, :raise_errors => false)
           token = token.refresh!
         rescue Exception => e
-          puts 'exception'
-          puts e.message
-          puts e.response.body
+          token = nil
         end
       else
         params = {:client_id      => client.id,
@@ -61,8 +59,13 @@ class DeployTool::Target::EfficientCloud
       response.body
     end
 
+    def to_h
+      {:server => @server, :app_name => @app_name, :email => email, :password => @password, :refresh_token => @refresh_token, :auth_method => @auth_method}
+    end
+
     def info
       response = call :get, 'info'
+      return nil if not response
       doc = REXML::Document.new response
       data = {}
       doc.elements["app"].each_element do |el|
@@ -118,6 +121,7 @@ class DeployTool::Target::EfficientCloud
 
     def deploy(code_token)
       initial_response = call :post, 'deploy', {:code_token => code_token}
+      return nil if not initial_response
       doc = REXML::Document.new initial_response
       deploy_token = doc.elements["deploy/token"].text
       deploy_token

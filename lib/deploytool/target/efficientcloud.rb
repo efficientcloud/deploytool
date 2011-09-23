@@ -23,10 +23,10 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
   
   def to_h
     x = {:type => "EfficientCloud", :api_server => @api_client.server, :app_name => @api_client.app_name,}
-    if @api_client.auth_method == :password
-      puts 'authentication method is still username/password; will not save credentials'
-    else
+    if @api_client.auth_method == :refresh_token
       x.merge({:refresh_token => @api_client.refresh_token})
+    else
+      x
     end
   end
   
