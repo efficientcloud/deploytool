@@ -1,6 +1,9 @@
 source "http://rubygems.org"
 
+gem "oauth2"
+
 gemspec
+
 
 group :development do
   gem "rspec", ">= 2.0"

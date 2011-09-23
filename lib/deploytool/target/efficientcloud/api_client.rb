@@ -5,34 +5,60 @@ require 'net/http/post/multipart'
 require 'fileutils'
 require 'tempfile'
 require 'zip'
+require 'oauth2'
 
 class DeployTool::Target::EfficientCloud
   class ApiClient
-    attr_reader :server, :app_name, :email, :password
-    def initialize(server, app_name, email, password)
+    attr_reader :server, :app_name, :email, :password, :refresh_token, :auth_method
+    def initialize(server, app_name, auth)
       @app_name = app_name
       @server = server
-      @email = email
-      @password = password
+      if auth.has_key? :refresh_token
+        @refresh_token = auth[:refresh_token]
+        @auth_method = :refresh_token
+      else
+        @email = auth[:email]
+        @password = auth[:password]
+        @auth_method = :password
+      end
     end
     
     def call(method, method_name, data = {})
       url = Addressable::URI.parse("http://#{@server}/api/cli/v1/apps/#{@app_name}/#{method_name}")
-      data = data.merge(:email => @email, :password => @password)
-      if method == :post
-        res = Net::HTTP.start(url.host, url.port) do |http|
-          http.request Net::HTTP::Post::Multipart.new(url.path, data)
+      client = OAuth2::Client.new('client_id', 'client_secret', :site => "http://#{server}/", :token_url => '/oauth2/token', :raise_errors => false) do |builder|
+        builder.use Faraday::Request::Multipart
+        builder.use Faraday::Request::UrlEncoded
+        builder.adapter :net_http
+      end
+      token = nil
+      if @auth_method == :password
+        begin
+          token = client.password.get_token(@email, @password, :raise_errors => false)
+          token = token.refresh!
+        rescue Exception => e
+          puts 'exception'
+          puts e.message
+          puts e.response.body
         end
       else
-        url.query_values = data
-        res = Net::HTTP.get_response(url)
+        params = {:client_id      => client.id,
+                  :client_secret  => client.secret,
+                  :grant_type     => 'refresh_token',
+                  :refresh_token  => @refresh_token
+                  }
+        token = client.get_token(params)
       end
-      case res
-      when Net::HTTPSuccess, Net::HTTPRedirection
-        res.body
-      else  
-        res.error!
+
+      if not token
+        puts 'authentication unsuccessful, sorry!'
+        return
       end
+
+      @refresh_token = token.refresh_token
+      @auth_method = :refresh_token
+
+      response = token.request(method, url.path, method==:post ? {:body => data} : {:params => data})
+      response.body
     end
 
     def info
@@ -74,20 +100,20 @@ class DeployTool::Target::EfficientCloud
       end
       
       puts "-----> Uploading %s code tarball..." % human_filesize(tempfile.path)
-      initial_response = call :post, 'upload', {:code => UploadIO.new(tempfile, "application/zip", "ecli-upload.zip")}
+      initial_response = call :post, 'upload', {:code => Faraday::UploadIO.new(tempfile, "application/zip")}
       doc = REXML::Document.new initial_response
       doc.elements["code/code-token"].text
-    rescue Net::HTTPServerException => e
-      case e.response
-      when Net::HTTPNotFound
-        $logger.error "Application %s couldn't be found." % @app_name
-      when Net::HTTPUnauthorized
-        $logger.error "You're not authorized to update %s." % @app_name
-      else
-        raise e
-      end
-      $logger.info "\nPlease check the controlpanel for update instructions."
-      exit 2
+    #rescue Net::HTTPServerException => e
+    #  case e.response
+    #  when Net::HTTPNotFound
+    #    $logger.error "Application %s couldn't be found." % @app_name
+    #  when Net::HTTPUnauthorized
+    #    $logger.error "You're not authorized to update %s." % @app_name
+    #  else
+    #    raise e
+    #  end
+    #  $logger.info "\nPlease check the controlpanel for update instructions."
+    #  exit 2
     end
 
     def deploy(code_token)

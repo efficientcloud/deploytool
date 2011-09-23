@@ -22,7 +22,12 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
   end
   
   def to_h
-    {:type => "EfficientCloud", :api_server => @api_client.server, :app_name => @api_client.app_name, :email => @api_client.email, :password => @api_client.password}
+    x = {:type => "EfficientCloud", :api_server => @api_client.server, :app_name => @api_client.app_name,}
+    if @api_client.auth_method == :password
+      puts 'authentication method is still username/password; will not save credentials'
+    else
+      x.merge({:refresh_token => @api_client.refresh_token})
+    end
   end
   
   def to_s
@@ -31,7 +36,8 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
   
   def initialize(options)
     @api_server = options['api_server']
-    @api_client = ApiClient.new(options['api_server'], options['app_name'], options['email'], options['password'])
+    auth = options.has_key?('refresh_token') ? {:refresh_token => options['refresh_token']} : {:email => options['email'], :password => options['password']}
+    @api_client = ApiClient.new(options['api_server'], options['app_name'], auth )
   end
 
   def self.check_version(api_server)
