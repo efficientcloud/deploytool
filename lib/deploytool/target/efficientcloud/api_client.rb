@@ -36,7 +36,7 @@ class DeployTool::Target::EfficientCloud
       token = nil
       if @auth_method == :password
         begin
-          token = client.password.get_token(@email, @password, :raise_errors => false)
+          token = client.password.get_token(@email, @password, :raise_errors => true)
           token = token.refresh!
         rescue Exception => e
           token = nil
