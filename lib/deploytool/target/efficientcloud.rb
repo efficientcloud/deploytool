@@ -1,5 +1,6 @@
 require 'highline'
 
+
 class DeployTool::Target::EfficientCloud < DeployTool::Target
   SUPPORTED_API_VERSION = 2
   def self.parse_target_spec(target_spec)

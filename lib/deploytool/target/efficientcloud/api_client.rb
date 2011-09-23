@@ -7,6 +7,9 @@ require 'tempfile'
 require 'zip'
 require 'oauth2'
 
+CLIENT_ID = 'com.efficientcloud.api.deploytool'
+CLIENT_SECRET = '11d6b5cc70e4bc9563a3b8dd50dd34f6'
+
 class DeployTool::Target::EfficientCloud
   class ApiClient
     attr_reader :server, :app_name, :email, :password, :refresh_token, :auth_method
@@ -25,7 +28,7 @@ class DeployTool::Target::EfficientCloud
     
     def call(method, method_name, data = {})
       url = Addressable::URI.parse("http://#{@server}/api/cli/v1/apps/#{@app_name}/#{method_name}")
-      client = OAuth2::Client.new('client_id', 'client_secret', :site => "http://#{server}/", :token_url => '/oauth2/token', :raise_errors => false) do |builder|
+      client = OAuth2::Client.new(CLIENT_ID, CLIENT_SECRET, :site => "http://#{server}/", :token_url => '/oauth2/token', :raise_errors => false) do |builder|
         builder.use Faraday::Request::Multipart
         builder.use Faraday::Request::UrlEncoded
         builder.adapter :net_http
