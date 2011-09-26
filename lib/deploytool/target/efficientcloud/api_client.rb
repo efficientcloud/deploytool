@@ -64,7 +64,7 @@ class DeployTool::Target::EfficientCloud
       @auth_method = :refresh_token
 
       response = token.request(method, url.path, method==:post ? {:body => data} : {:params => data})
-      response.body
+      response
     end
 
     def to_h
@@ -74,7 +74,10 @@ class DeployTool::Target::EfficientCloud
     def info
       response = call :get, 'info'
       return nil if not response
-      doc = REXML::Document.new response
+      if response.status == 404
+        raise "404 app not found"
+      end
+      doc = REXML::Document.new response.body
       data = {}
       doc.elements["app"].each_element do |el|
         data[el.name.gsub('-','_').to_sym] = el.text
