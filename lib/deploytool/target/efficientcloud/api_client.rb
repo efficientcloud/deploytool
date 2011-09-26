@@ -7,6 +7,7 @@ require 'tempfile'
 require 'zip'
 require 'oauth2'
 require 'multi_json'
+require 'highline'
 
 CLIENT_ID = 'com.efficientcloud.api.deploytool'
 CLIENT_SECRET = '11d6b5cc70e4bc9563a3b8dd50dd34f6'
@@ -21,10 +22,12 @@ class DeployTool::Target::EfficientCloud
         @refresh_token = auth[:refresh_token]
         @auth_method = :refresh_token
       else
-        @email = auth[:email]
-        @password = auth[:password]
         @auth_method = :password
       end
+    end
+
+    def re_auth
+      @auth_method = :password
     end
     
     def call(method, method_name, data = {})
@@ -34,31 +37,46 @@ class DeployTool::Target::EfficientCloud
         builder.use Faraday::Request::UrlEncoded
         builder.adapter :net_http
       end
-      token = nil
-      if @auth_method == :password
+      auth = false
+      tries = 0
+      while not auth
+        token = nil
         begin
-          token = client.password.get_token(@email, @password, :raise_errors => true)
-          token = token.refresh!
+          if @auth_method == :password
+            if tries != 0
+              if HighLine.new.ask("Would you like to try again? y/n") != 'y'
+                return
+              end
+            end
+            tries += 1
+            $logger.info "Please specify your controlpanel login information"
+            email =    HighLine.new.ask("E-mail:   ")
+            password = HighLine.new.ask("Password: ") {|q| q.echo = "*" }
+            token = client.password.get_token(email, password, :raise_errors => true)
+            token = token.refresh!
+          else
+            params = {:client_id      => client.id,
+                      :client_secret  => client.secret,
+                      :grant_type     => 'refresh_token',
+                      :refresh_token  => @refresh_token
+                      }
+            token = client.get_token(params)
+          end
         rescue Exception => e
+          puts e
           token = nil
           details = MultiJson.decode(e.response.body) rescue nil
           if details
             puts "#{details['error']}: #{details['error_description']}"
+            re_auth if details['error']
           end
         end
-      else
-        params = {:client_id      => client.id,
-                  :client_secret  => client.secret,
-                  :grant_type     => 'refresh_token',
-                  :refresh_token  => @refresh_token
-                  }
-        token = client.get_token(params)
+        auth =token
+        if not token
+          puts 'authentication unsuccessful, sorry!'
+        end
       end
 
-      if not token
-        puts 'authentication unsuccessful, sorry!'
-        return
-      end
 
       @refresh_token = token.refresh_token
       @auth_method = :refresh_token

@@ -71,12 +71,13 @@ class DeployTool::Command
       opts[:timing] = true if args.include?("--timing")
 
       target = DeployTool::Target.from_config(target)
-      #begin
+      begin
         target.push(opts)
-      #rescue => e
-      #  puts e
-      #  exit 2
-      #end
+      rescue => e
+        puts e
+        exit 2
+      end
+      DeployTool::Config[args[0]] = target.to_h
     end
     
     DeployTool::Config.save

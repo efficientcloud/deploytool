@@ -1,6 +1,3 @@
-require 'highline'
-
-
 class DeployTool::Target::EfficientCloud < DeployTool::Target
   SUPPORTED_API_VERSION = 2
   def self.parse_target_spec(target_spec)
@@ -37,7 +34,7 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
   
   def initialize(options)
     @api_server = options['api_server']
-    auth = options.has_key?('refresh_token') ? {:refresh_token => options['refresh_token']} : {:email => options['email'], :password => options['password']}
+    auth = options.has_key?('refresh_token') ? {:refresh_token => options['refresh_token']} : {}
     @api_client = ApiClient.new(options['api_server'], options['app_name'], auth )
   end
 
@@ -58,11 +55,8 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
   end
 
   def self.create(target_spec)
-    $logger.info "Please specify your controlpanel login information"
-    email =    HighLine.new.ask("E-mail:   ")
-    password = HighLine.new.ask("Password: ") {|q| q.echo = "*" }
     app_name, api_server = parse_target_spec(target_spec)
-    EfficientCloud.new('api_server' => api_server, 'app_name' => app_name, 'email' => email, 'password' => password)
+    EfficientCloud.new('api_server' => api_server, 'app_name' => app_name)
   end
 
   def verify
