@@ -64,6 +64,10 @@ class DeployTool::Target::EfficientCloud
       @auth_method = :refresh_token
 
       response = token.request(method, url.path, method==:post ? {:body => data} : {:params => data})
+      if response.status != 200
+        details = MultiJson.decode(response.body) rescue nil
+        raise "#{response.status} #{details}"
+      end
       response
     end
 
@@ -74,9 +78,6 @@ class DeployTool::Target::EfficientCloud
     def info
       response = call :get, 'info'
       return nil if not response
-      if response.status == 404
-        raise "404 app not found"
-      end
       doc = REXML::Document.new response.body
       data = {}
       doc.elements["app"].each_element do |el|
@@ -115,25 +116,14 @@ class DeployTool::Target::EfficientCloud
       
       puts "-----> Uploading %s code tarball..." % human_filesize(tempfile.path)
       initial_response = call :post, 'upload', {:code => Faraday::UploadIO.new(tempfile, "application/zip")}
-      doc = REXML::Document.new initial_response
+      doc = REXML::Document.new initial_response.body
       doc.elements["code/code-token"].text
-    #rescue Net::HTTPServerException => e
-    #  case e.response
-    #  when Net::HTTPNotFound
-    #    $logger.error "Application %s couldn't be found." % @app_name
-    #  when Net::HTTPUnauthorized
-    #    $logger.error "You're not authorized to update %s." % @app_name
-    #  else
-    #    raise e
-    #  end
-    #  $logger.info "\nPlease check the controlpanel for update instructions."
-    #  exit 2
     end
 
     def deploy(code_token)
       initial_response = call :post, 'deploy', {:code_token => code_token}
       return nil if not initial_response
-      doc = REXML::Document.new initial_response
+      doc = REXML::Document.new initial_response.body
       deploy_token = doc.elements["deploy/token"].text
       deploy_token
     end
@@ -153,7 +143,7 @@ class DeployTool::Target::EfficientCloud
       while true
         sleep 1
         resp = call :get, 'deploy_status', {:deploy_token => deploy_token}
-        doc = REXML::Document.new resp
+        doc = REXML::Document.new resp.body
         
         if doc.elements["deploy/message"].nil?
           puts resp

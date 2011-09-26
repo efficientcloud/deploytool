@@ -76,6 +76,8 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
         $logger.error "Authentication failed (password wrong?)"
       elsif e.message.include?("404 ")
         $logger.error "Application does not exist"
+      elsif e.message.starts_with?("ERROR ")
+        puts e.message
       else
         $logger.error "Remote server said: %s" % [e.message]
       end
@@ -92,7 +94,15 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
     end
     code_token = @api_client.upload
     deploy_token = @api_client.deploy(code_token)
-    @api_client.deploy_status(deploy_token, opts) # Blocks till deploy is done
+    begin
+      @api_client.deploy_status(deploy_token, opts) # Blocks till deploy is done
+    rescue => e
+      if e.message.start_with?("ERROR ")
+        puts e.message
+      else
+        puts "some error happened, sorry!"
+      end
+    end
   end
 end
 
