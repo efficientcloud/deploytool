@@ -6,6 +6,7 @@ require 'fileutils'
 require 'tempfile'
 require 'zip'
 require 'oauth2'
+require 'multi_json'
 
 CLIENT_ID = 'com.efficientcloud.api.deploytool'
 CLIENT_SECRET = '11d6b5cc70e4bc9563a3b8dd50dd34f6'
@@ -40,6 +41,10 @@ class DeployTool::Target::EfficientCloud
           token = token.refresh!
         rescue Exception => e
           token = nil
+          details = MultiJson.decode(e.response.body) rescue nil
+          if details
+            puts "#{details['error']}: #{details['error_description']}"
+          end
         end
       else
         params = {:client_id      => client.id,
