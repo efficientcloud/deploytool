@@ -1,3 +1,4 @@
+require 'highline'
 class DeployTool::Target::EfficientCloud < DeployTool::Target
   SUPPORTED_API_VERSION = 2
   def self.parse_target_spec(target_spec)
@@ -86,6 +87,11 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
       $logger.error info[:blocking_deployment]
       exit 4
     end
+    if info[:warn_deployment]
+      $logger.info info[:warn_deployment]
+      exit 5 if HighLine.new.ask("Deploy anyway? (y/N)").downcase.strip != 'y'
+    end
+
     code_token = @api_client.upload
     deploy_token = @api_client.deploy(code_token)
     begin
