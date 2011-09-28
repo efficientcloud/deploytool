@@ -41,10 +41,11 @@ class DeployTool::Target::EfficientCloud
       tries = 0
       while not auth
         token = nil
+        handled_error = false
         begin
           if @auth_method == :password
             if tries != 0
-              if HighLine.new.ask("Would you like to try again? y/n") != 'y'
+              if HighLine.new.ask("Would you like to try again? (y/n): ") != 'y'
                 return
               end
             end
@@ -52,8 +53,14 @@ class DeployTool::Target::EfficientCloud
             $logger.info "Please specify your controlpanel login information"
             email =    HighLine.new.ask("E-mail:   ")
             password = HighLine.new.ask("Password: ") {|q| q.echo = "*" }
-            token = client.password.get_token(email, password, :raise_errors => true)
-            token = token.refresh!
+            print "Authorizing..."
+            begin
+              token = client.password.get_token(email, password, :raise_errors => true)
+              token = token.refresh!
+            ensure
+              print "\r"
+            end
+            puts "Authorization succeeded."
           else
             params = {:client_id      => client.id,
                       :client_secret  => client.secret,
@@ -62,18 +69,28 @@ class DeployTool::Target::EfficientCloud
                       }
             token = client.get_token(params)
           end
-        rescue Exception => e
-          puts e
+        rescue OAuth2::Error => e
+          handled_error = true
+          print "Authorization failed"
           token = nil
           details = MultiJson.decode(e.response.body) rescue nil
           if details
-            puts "#{details['error']}: #{details['error_description']}"
+            puts ": #{details['error_description']}"
             re_auth if details['error']
+          else
+            puts "."
           end
+        rescue EOFError
+          exit 1
+        rescue Interrupt
+          exit 1
+        rescue Exception => e
+          puts "ERROR: #{e.inspect}"
+          puts ""
         end
-        auth =token
-        if not token
-          puts 'authentication unsuccessful, sorry!'
+        auth = token
+        if not token and not handled_error
+          puts "Authorization failed."
         end
       end
 
