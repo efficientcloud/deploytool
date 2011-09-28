@@ -1,6 +1,15 @@
 require 'highline'
 class DeployTool::Target::EfficientCloud < DeployTool::Target
   SUPPORTED_API_VERSION = 3
+  
+  def self.cloud_name
+    @cloud_name || 'Efficient Cloud'
+  end
+  
+  def self.support_email
+    @support_email || 'team@efficientcloud.com'
+  end
+  
   def self.parse_target_spec(target_spec)
     server, app_name = target_spec.split('@').reverse
     if app_name.nil?
@@ -52,6 +61,7 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
       $logger.error "This version of deploytool is outdated.\nThis server requires at least API Version #{info['api_version']}."
       return false
     end
+    @cloud_name = info['cloud_name']
     return true
   end
 
@@ -73,8 +83,10 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
         $logger.error "Application does not exist"
       elsif e.message.start_with?("ERROR ")
         puts e.message
+        $logger.info "\nPlease contact %s support and include the above output: %s" % [EfficientCloud.cloud_name, EfficientCloud.support_email]
       else
         $logger.error "Remote server said: %s" % [e.message]
+        $logger.info "\nPlease contact %s support and include the above output: %s" % [EfficientCloud.cloud_name, EfficientCloud.support_email]
       end
     end
     exit 5

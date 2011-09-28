@@ -48,11 +48,10 @@ class DeployTool::Target::EfficientCloud
         handled_error = false
         begin
           if @auth_method == :password
-            if tries != 0
-              if HighLine.new.ask("Would you like to try again? (y/n): ") != 'y'
-                return
-              end
-            elsif !@email.nil? && !@password.nil?
+            if tries != 0 && HighLine.new.ask("Would you like to try again? (y/n): ") != 'y'
+              return
+            end
+            if !@email.nil? && !@password.nil?
               # Upgrade from previous configuration file
               print "Logging in..."
               begin
@@ -70,7 +69,7 @@ class DeployTool::Target::EfficientCloud
               end
             else
               tries += 1
-              $logger.info "Please specify your controlpanel login information"
+              $logger.info "Please specify your %s login data" % [DeployTool::Target::EfficientCloud.cloud_name]
               email =    HighLine.new.ask("E-mail:   ")
               password = HighLine.new.ask("Password: ") {|q| q.echo = "*" }
               print "Authorizing..."
@@ -107,6 +106,7 @@ class DeployTool::Target::EfficientCloud
           exit 1
         rescue StandardError => e
           puts "ERROR: #{e.inspect}"
+          puts "\nPlease contact %s support: %s" % [EfficientCloud.cloud_name, EfficientCloud.support_email]
           puts ""
         end
         auth = token
@@ -114,8 +114,7 @@ class DeployTool::Target::EfficientCloud
           puts "Authorization failed."
         end
       end
-
-
+      
       @refresh_token = token.refresh_token
       @auth_method = :refresh_token
 

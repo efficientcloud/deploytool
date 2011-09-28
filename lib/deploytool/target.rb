@@ -51,6 +51,7 @@ class DeployTool::Target
       $logger.debug "Calling '%s' took longer than 5s, skipping" % [url, res.code, res.body]
       return nil
     end
+    return nil if res.nil?
     if res.code != '200'
       $logger.debug "Calling '%s' returned %s, skipping" % [url, res.code, res.body]
       return nil
