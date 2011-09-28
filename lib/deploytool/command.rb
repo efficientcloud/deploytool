@@ -18,6 +18,12 @@ class DeployTool::Command
     if args.include?("--debug")
       args.delete("--debug")
       $logger.level = Logger::DEBUG
+    elsif args.include?("-d")
+      args.delete("-d")
+      $logger.level = Logger::DEBUG
+    elsif args.include?("-v")
+      args.delete("-v")
+      $logger.level = Logger::DEBUG
     else
       $logger.level = Logger::INFO
     end
