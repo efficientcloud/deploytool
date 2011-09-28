@@ -9,7 +9,7 @@ Gem::Specification.new do |gem|
   gem.email       = "hello@platformdirectory.com"
   gem.homepage    = "http://platformdirectory.com/"
   gem.summary     = "Multi-platform deployment tool."
-  gem.description = "Deployment tool with support for multiple Platform-as-a-Service providers."
+  gem.description = "Deployment tool for web application platforms powered by EFC."
   gem.executables = "deploy"
 
   gem.files = %x{ git ls-files }.split("\n").select { |d| d =~ %r{^(README|bin/|data/|ext/|lib/|spec/|test/)} }
