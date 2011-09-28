@@ -21,6 +21,10 @@ class DeployTool::Target::EfficientCloud
       if auth.has_key? :refresh_token
         @refresh_token = auth[:refresh_token]
         @auth_method = :refresh_token
+      elsif auth.has_key? :email
+        @auth_method = :password
+        @email = auth[:email]
+        @password = auth[:password]
       else
         @auth_method = :password
       end
@@ -48,19 +52,36 @@ class DeployTool::Target::EfficientCloud
               if HighLine.new.ask("Would you like to try again? (y/n): ") != 'y'
                 return
               end
+            elsif !@email.nil? && !@password.nil?
+              # Upgrade from previous configuration file
+              print "Logging in..."
+              begin
+                token = client.password.get_token(@email, @password, :raise_errors => true)
+                token = token.refresh!
+                @email = nil
+                @password = nil
+              rescue StandardError => e
+                @email = nil
+                @password = nil
+                tries = 0
+                retry
+              ensure
+                print "\r"
+              end
+            else
+              tries += 1
+              $logger.info "Please specify your controlpanel login information"
+              email =    HighLine.new.ask("E-mail:   ")
+              password = HighLine.new.ask("Password: ") {|q| q.echo = "*" }
+              print "Authorizing..."
+              begin
+                token = client.password.get_token(email, password, :raise_errors => true)
+                token = token.refresh!
+              ensure
+                print "\r"
+              end
+              puts "Authorization succeeded."
             end
-            tries += 1
-            $logger.info "Please specify your controlpanel login information"
-            email =    HighLine.new.ask("E-mail:   ")
-            password = HighLine.new.ask("Password: ") {|q| q.echo = "*" }
-            print "Authorizing..."
-            begin
-              token = client.password.get_token(email, password, :raise_errors => true)
-              token = token.refresh!
-            ensure
-              print "\r"
-            end
-            puts "Authorization succeeded."
           else
             params = {:client_id      => client.id,
                       :client_secret  => client.secret,
@@ -84,7 +105,7 @@ class DeployTool::Target::EfficientCloud
           exit 1
         rescue Interrupt
           exit 1
-        rescue Exception => e
+        rescue StandardError => e
           puts "ERROR: #{e.inspect}"
           puts ""
         end

@@ -35,8 +35,8 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
   
   def initialize(options)
     @api_server = options['api_server']
-    auth = options.has_key?('refresh_token') ? {:refresh_token => options['refresh_token']} : {}
-    @api_client = ApiClient.new(options['api_server'], options['app_name'], auth )
+    auth = options.has_key?('refresh_token') ? {:refresh_token => options['refresh_token']} : {:email => options['email'], :password => options['password']}
+    @api_client = ApiClient.new(options['api_server'], options['app_name'], auth)
   end
 
   def self.check_version(api_server)
