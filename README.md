@@ -2,20 +2,10 @@
 
 Deployment tool for Platform-as-a-Service providers, with special support for multi-stage deploys (e.g. for staging environments).
 
-Platforms currently supported:
-
-* Efficient Cloud Platforms
-
-Platform support planned:
-
-* Heroku
-* Cloud Foundry Platforms
-
 ## Deploying a Ruby on Rails app
 
-    gem install deploytool
-    deploy add production portfolio.heroku.com
-    deploy add staging portfolio.vcap.me
+    gem install deployto
+    deploy add production young-samurai-4@example.org
     deploy production
 
 ## Config file

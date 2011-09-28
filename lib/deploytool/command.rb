@@ -5,12 +5,11 @@ class DeployTool::Command
       puts "Deploytool Usage Instructions"
       puts ""
       puts "Add a target:"
-      puts "  deploy add production app1@demo.efficientcloud.com"
-      puts "  deploy add staging myapp.heroku.com"
-      puts "  deploy add failover api.cloudfoundry.com"
+      puts "  deploy add production young-samurai-4@example.org"
+      puts "  deploy add staging green-flower-2@example.org"
       puts ""
       puts "Deploy the current directory to the target:"
-      puts "  deploy to production"
+      puts "  deploy production"
   end
 
   def self.run(command, args)

@@ -19,7 +19,6 @@ Gem::Specification.new do |gem|
   gem.add_dependency "multipart-post"
   gem.add_dependency "highline",       ">= 1.6.2"
   gem.add_dependency "zip"
-  gem.add_dependency "heroku"
   gem.add_dependency "json_pure"
   gem.add_dependency "oauth2"
 end
