@@ -1,6 +1,6 @@
 require 'highline'
 class DeployTool::Target::EfficientCloud < DeployTool::Target
-  SUPPORTED_API_VERSION = 2
+  SUPPORTED_API_VERSION = 3
   def self.parse_target_spec(target_spec)
     server, app_name = target_spec.split('@').reverse
     if app_name.nil?
