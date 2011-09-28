@@ -21,4 +21,5 @@ Gem::Specification.new do |gem|
   gem.add_dependency "zip"
   gem.add_dependency "heroku"
   gem.add_dependency "json_pure"
+  gem.add_dependency "oauth2"
 end
