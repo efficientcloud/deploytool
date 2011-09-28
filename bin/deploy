@@ -16,6 +16,7 @@ $logger.formatter = proc do |severity, datetime, progname, msg|
     "#{msg}\n"
   end
 end
+HighLine.track_eof = false
 
 args = ARGV.dup
 ARGV.clear
