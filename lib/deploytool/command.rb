@@ -1,8 +1,10 @@
+require 'deploytool/version'
+
 class DeployTool::Command
   COMMANDS = ["to", "logs", "import", "export", "config"]
   
   def self.print_help
-      puts "Deploytool Usage Instructions"
+      puts "Deploytool Version #{DeployTool::VERSION} Usage Instructions"
       puts ""
       puts "Add a target:"
       puts "  deploy add production young-samurai-4@example.org"
