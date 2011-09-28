@@ -8,6 +8,7 @@ PATH
       inifile (>= 0.4.1)
       json_pure
       multipart-post
+      oauth2
       zip
 
 GEM
@@ -57,7 +58,6 @@ PLATFORMS
 
 DEPENDENCIES
   deployto!
-  oauth2
   rake (>= 0.8.7)
   rr
   rspec (>= 2.0)
