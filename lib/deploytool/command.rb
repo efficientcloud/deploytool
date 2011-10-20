@@ -82,7 +82,7 @@ class DeployTool::Command
         target.push(opts)
       rescue => e
         puts e
-        puts "\nPlease contact %s support: %s" % [EfficientCloud.cloud_name, EfficientCloud.support_email]
+        puts "\nPlease contact %s support: %s" % [DeployTool::Target::EfficientCloud.cloud_name, DeployTool::Target::EfficientCloud.support_email]
         exit 2
       end
       DeployTool::Config[args[0]] = target.to_h
