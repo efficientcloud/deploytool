@@ -1,4 +1,3 @@
-require 'rexml/document'
 require 'addressable/uri'
 require 'net/http'
 require 'net/http/post/multipart'
@@ -35,7 +34,8 @@ class DeployTool::Target::EfficientCloud
     end
     
     def call(method, method_name, data = {})
-      url = Addressable::URI.parse("http://#{@server}/api/cli/v1/apps/#{@app_name}/#{method_name}")
+      method_name = '/' + method_name unless method_name.nil?
+      url = Addressable::URI.parse("http://#{@server}/api/cli/v1/apps/#{@app_name}#{method_name}.json")
       client = OAuth2::Client.new(CLIENT_ID, CLIENT_SECRET, :site => "http://#{server}/", :token_url => '/oauth2/token', :raise_errors => false) do |builder|
         builder.use Faraday::Request::Multipart
         builder.use Faraday::Request::UrlEncoded
@@ -118,12 +118,14 @@ class DeployTool::Target::EfficientCloud
       @refresh_token = token.refresh_token
       @auth_method = :refresh_token
 
-      response = token.request(method, url.path, method==:post ? {:body => data} : {:params => data})
+      opts = method==:get ? {:params => data} : {:body => data}
+      opts.merge!({:headers => {'Accept' => 'application/json'}})
+      response = token.request(method, url.path, opts)
       if response.status != 200
         details = MultiJson.decode(response.body) rescue nil
         raise "#{response.status} #{details}"
       end
-      response
+      MultiJson.decode(response.body)
     end
 
     def to_h
@@ -131,12 +133,12 @@ class DeployTool::Target::EfficientCloud
     end
 
     def info
-      response = call :get, 'info'
+      response = call :get, nil
       return nil if not response
-      doc = REXML::Document.new response.body
       data = {}
-      doc.elements["app"].each_element do |el|
-        data[el.name.gsub('-','_').to_sym] = el.text
+      response["app"].each do |k,v|
+        next unless v === String
+        data[k.to_sym] = v
       end
       data
     end
@@ -171,16 +173,13 @@ class DeployTool::Target::EfficientCloud
       
       puts "-----> Uploading %s code tarball..." % human_filesize(tempfile.path)
       initial_response = call :post, 'upload', {:code => Faraday::UploadIO.new(tempfile, "application/zip")}
-      doc = REXML::Document.new initial_response.body
-      doc.elements["code/code-token"].text
+      initial_response["code_token"]
     end
 
     def deploy(code_token)
       initial_response = call :post, 'deploy', {:code_token => code_token}
       return nil if not initial_response
-      doc = REXML::Document.new initial_response.body
-      deploy_token = doc.elements["deploy/token"].text
-      deploy_token
+      initial_response["token"]
     end
 
     def save_timing_data(data)
@@ -198,19 +197,18 @@ class DeployTool::Target::EfficientCloud
       while true
         sleep 1
         resp = call :get, 'deploy_status', {:deploy_token => deploy_token}
-        doc = REXML::Document.new resp.body
         
-        if doc.elements["deploy/message"].nil?
+        if resp["message"].nil?
           puts resp
           puts "...possibly done."
           break
         end
-        if doc.elements["deploy/message"].text == 'finished'
+        if resp["message"] == 'finished'
           puts "\n-----> FINISHED after %d seconds!" % (Time.now-start)
           break
         end
         
-        status = doc.elements["deploy/message"].text.gsub('["', '').gsub('"]', '')
+        status = resp["message"].gsub('["', '').gsub('"]', '')
         if previous_status != status
           case status
           when "build"
@@ -225,7 +223,7 @@ class DeployTool::Target::EfficientCloud
           previous_status = status
         end
         
-        logs = doc.elements["deploy/logs"].text rescue nil
+        logs = resp["logs"]
         if logs
           puts "" if status != "build" # Add newline after the dots
           puts logs
@@ -255,4 +253,3 @@ class DeployTool::Target::EfficientCloud
     end
   end
 end
-
