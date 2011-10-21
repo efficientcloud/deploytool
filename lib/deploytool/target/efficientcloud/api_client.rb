@@ -121,7 +121,7 @@ class DeployTool::Target::EfficientCloud
       opts = method==:get ? {:params => data} : {:body => data}
       opts.merge!({:headers => {'Accept' => 'application/json'}})
       response = token.request(method, url.path, opts)
-      if response.status != 200
+      if not [200,201].include?(response.status)
         details = MultiJson.decode(response.body) rescue nil
         raise "#{response.status} #{details}"
       end
@@ -137,7 +137,7 @@ class DeployTool::Target::EfficientCloud
       return nil if not response
       data = {}
       response["app"].each do |k,v|
-        next unless v === String
+        next unless v.kind_of?(String)
         data[k.to_sym] = v
       end
       data
@@ -250,6 +250,48 @@ class DeployTool::Target::EfficientCloud
       e = (Math.log(size)/Math.log(1024)).floor
       s = "%.1f" % (size.to_f / 1024**e)
       s.sub(/\.?0*$/, units[e])
+    end
+
+    def cancel_exec(cli_task_id, command_id)
+      call :delete, "cli_tasks/#{cli_task_id}", {} unless cli_task_id.nil?
+      call :delete, "commands/#{command_id}", {} unless command_id.nil?
+      nil
+    end
+
+    def exec(command)
+      name = "cli#{Time.now}"
+      response = call :post, 'commands', {:command => {:name => name, :command => command}}
+      return nil if not response
+      command_id = response["command"]["id"]
+
+      response = call :post, 'cli_tasks', {:cli_task => {:name => name, :command_id => command_id}}
+      return nil if not response
+      cli_task_id = response["cli_task"]["id"]
+
+      response = call :post, "cli_tasks/#{cli_task_id}/dispatch_task", {}
+      return nil if not response
+      token = response["token"]
+      puts "---> Launching..."
+
+      while true do
+        response = call :get, "cli_tasks/#{cli_task_id}/drain_status", {:token => token}
+        unless response["logs"].nil?
+          puts response["logs"]
+        end
+        if response["message"] == "success"
+          puts "---> Done."
+          break
+        end
+        if response["message"] == "failure"
+          puts "---> Failed."
+          break
+        end
+        sleep 1
+      end
+
+      nil
+    ensure
+      cancel_exec cli_task_id, command_id
     end
   end
 end

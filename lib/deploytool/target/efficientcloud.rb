@@ -112,9 +112,20 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
       if e.message.start_with?("ERROR ")
         puts e.message
       else
-        puts "some error happened, sorry!"
+        puts "Unknown error happened: #{e.message}"
       end
     end
+  end
+
+  def exec(opts)
+    self.class.check_version(@api_server)
+    info = @api_client.info
+    if info[:blocking_deployment]
+      $logger.error info[:blocking_deployment]
+      exit 4
+    end
+
+    @api_client.exec(opts) # Blocks til done
   end
 end
 
