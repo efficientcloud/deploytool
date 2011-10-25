@@ -81,7 +81,7 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
         $logger.error "Authentication failed (password wrong?)"
       elsif e.message.include?("404 ")
         $logger.error "Application does not exist"
-      elsif e.message.start_with?("ERROR ")
+      elsif e.message.start_with?("ERROR")
         puts e.message
         $logger.info "\nPlease contact %s support and include the above output: %s" % [EfficientCloud.cloud_name, EfficientCloud.support_email]
       else
@@ -106,14 +106,12 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
 
     code_token = @api_client.upload
     deploy_token = @api_client.deploy(code_token)
-    begin
-      @api_client.deploy_status(deploy_token, opts) # Blocks till deploy is done
-    rescue => e
-      if e.message.start_with?("ERROR ")
-        puts e.message
-      else
-        puts "Unknown error happened: #{e.message}"
-      end
+    @api_client.deploy_status(deploy_token, opts) # Blocks till deploy is done
+  rescue => e
+    if e.message.start_with?("ERROR")
+      puts e.message
+    else
+      puts "Unknown error happened: #{e.message}"
     end
   end
 
@@ -126,6 +124,12 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
     end
 
     @api_client.exec(opts) # Blocks til done
+  rescue => e
+    if e.message.start_with?("ERROR")
+      puts e.message
+    else
+      puts "Unknown error happened: #{e.message}"
+    end
   end
 end
 

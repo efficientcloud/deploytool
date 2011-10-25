@@ -12,6 +12,15 @@ CLIENT_ID = 'com.efficientcloud.api.deploytool'
 CLIENT_SECRET = '11d6b5cc70e4bc9563a3b8dd50dd34f6'
 
 class DeployTool::Target::EfficientCloud
+  class ApiError < StandardError
+    attr_reader :response
+    def initialize(response)
+      @response = response
+      details = MultiJson.decode(response.body) rescue nil
+      super("API failure: #{response.status} #{details}")
+    end
+  end
+
   class ApiClient
     attr_reader :server, :app_name, :email, :password, :refresh_token, :auth_method
     def initialize(server, app_name, auth)
@@ -122,8 +131,7 @@ class DeployTool::Target::EfficientCloud
       opts.merge!({:headers => {'Accept' => 'application/json'}})
       response = token.request(method, url.path, opts)
       if not [200,201].include?(response.status)
-        details = MultiJson.decode(response.body) rescue nil
-        raise "#{response.status} #{details}"
+        raise ApiError.new(response)
       end
       MultiJson.decode(response.body)
     end
@@ -141,6 +149,10 @@ class DeployTool::Target::EfficientCloud
         data[k.to_sym] = v
       end
       data
+    rescue ApiError => e
+      if e.response.status == 404
+        raise "ERROR: Application does not exist on server"
+      end
     end
     
     def upload
