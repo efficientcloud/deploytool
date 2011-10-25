@@ -40,19 +40,21 @@ class DeployTool::Target::EfficientCloud
 
     def re_auth
       @auth_method = :password
+      @auth = nil
     end
-    
-    def call(method, method_name, data = {})
-      method_name = '/' + method_name unless method_name.nil?
-      url = Addressable::URI.parse("http://#{@server}/api/cli/v1/apps/#{@app_name}#{method_name}.json")
-      client = OAuth2::Client.new(CLIENT_ID, CLIENT_SECRET, :site => "http://#{server}/", :token_url => '/oauth2/token', :raise_errors => false) do |builder|
+
+    def auth!
+      return if @auth
+
+      @client = OAuth2::Client.new(CLIENT_ID, CLIENT_SECRET, :site => "http://#{server}/", :token_url => '/oauth2/token', :raise_errors => false) do |builder|
         builder.use Faraday::Request::Multipart
         builder.use Faraday::Request::UrlEncoded
         builder.adapter :net_http
       end
-      auth = false
+
+      @auth = false
       tries = 0
-      while not auth
+      while not @auth
         token = nil
         handled_error = false
         begin
@@ -64,7 +66,7 @@ class DeployTool::Target::EfficientCloud
               # Upgrade from previous configuration file
               print "Logging in..."
               begin
-                token = client.password.get_token(@email, @password, :raise_errors => true)
+                token = @client.password.get_token(@email, @password, :raise_errors => true)
                 token = token.refresh!
                 @email = nil
                 @password = nil
@@ -83,7 +85,7 @@ class DeployTool::Target::EfficientCloud
               password = HighLine.new.ask("Password: ") {|q| q.echo = "*" }
               print "Authorizing..."
               begin
-                token = client.password.get_token(email, password, :raise_errors => true)
+                token = @client.password.get_token(email, password, :raise_errors => true)
                 token = token.refresh!
               ensure
                 print "\r"
@@ -91,12 +93,12 @@ class DeployTool::Target::EfficientCloud
               puts "Authorization succeeded."
             end
           else
-            params = {:client_id      => client.id,
-                      :client_secret  => client.secret,
+            params = {:client_id      => @client.id,
+                      :client_secret  => @client.secret,
                       :grant_type     => 'refresh_token',
                       :refresh_token  => @refresh_token
                       }
-            token = client.get_token(params)
+            token = @client.get_token(params)
           end
         rescue OAuth2::Error => e
           handled_error = true
@@ -118,7 +120,7 @@ class DeployTool::Target::EfficientCloud
           puts "\nPlease contact %s support: %s" % [EfficientCloud.cloud_name, EfficientCloud.support_email]
           puts ""
         end
-        auth = token
+        @auth = token
         if not token and not handled_error
           puts "Authorization failed."
         end
@@ -126,10 +128,15 @@ class DeployTool::Target::EfficientCloud
       
       @refresh_token = token.refresh_token
       @auth_method = :refresh_token
+    end
 
+    def call(method, method_name, data = {})
+      auth!
+      method_name = '/' + method_name unless method_name.nil?
+      url = Addressable::URI.parse("http://#{@server}/api/cli/v1/apps/#{@app_name}#{method_name}.json")
       opts = method==:get ? {:params => data} : {:body => data}
       opts.merge!({:headers => {'Accept' => 'application/json'}})
-      response = token.request(method, url.path, opts)
+      response = @auth.request(method, url.path, opts)
       if not [200,201].include?(response.status)
         raise ApiError.new(response)
       end
