@@ -111,7 +111,8 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
     if e.message.start_with?("ERROR")
       puts e.message
     else
-      puts "Unknown error happened: #{e.message}"
+      $logger.debug e.backtrace.join("\n")
+      $logger.info "Unknown error happened: #{e.message}"
     end
   end
 
@@ -128,7 +129,8 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
     if e.message.start_with?("ERROR")
       puts e.message
     else
-      puts "Unknown error happened: #{e.message}"
+      $logger.debug e.backtrace.join("\n")
+      $logger.info "Unknown error happened: #{e.message}"
     end
   end
 end

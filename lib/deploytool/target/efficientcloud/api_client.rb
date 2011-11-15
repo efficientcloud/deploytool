@@ -117,7 +117,7 @@ class DeployTool::Target::EfficientCloud
           exit 1
         rescue StandardError => e
           puts "ERROR: #{e.inspect}"
-          puts "\nPlease contact %s support: %s" % [EfficientCloud.cloud_name, EfficientCloud.support_email]
+          puts "\nPlease contact %s support: %s" % [DeployTool::Target::EfficientCloud.cloud_name, DeployTool::Target::EfficientCloud.support_email]
           puts ""
         end
         @auth = token
