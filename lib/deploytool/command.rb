@@ -25,9 +25,9 @@ class DeployTool::Command
   end
 
   def self.handle_target_exception(e)
-    puts e.inspect
-    puts e.backtrace
-    puts "\nPlease contact %s support: %s" % [DeployTool::Target::EfficientCloud.cloud_name, DeployTool::Target::EfficientCloud.support_email]
+    $logger.debug e.inspect
+    $logger.debug e.backtrace
+    $logger.info "\nAn Error (%s) occured. Please contact %s support: %s" % [e.inspect, DeployTool::Target::EfficientCloud.cloud_name, DeployTool::Target::EfficientCloud.support_email]
     exit 2
   end
 

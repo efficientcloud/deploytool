@@ -112,7 +112,7 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
       puts e.message
     else
       $logger.debug e.backtrace.join("\n")
-      $logger.info "Unknown error happened: #{e.message}"
+      $logger.info "Unknown error happened: #{e.message}. Please try again or contact support."
     end
   end
 
