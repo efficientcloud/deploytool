@@ -55,13 +55,13 @@ class DeployTool::Target::EfficientCloud
       @auth = false
       tries = 0
       while not @auth
+        if tries != 0 && HighLine.new.ask("Would you like to try again? (y/n): ") != 'y'
+          return
+        end
         token = nil
         handled_error = false
         begin
           if @auth_method == :password
-            if tries != 0 && HighLine.new.ask("Would you like to try again? (y/n): ") != 'y'
-              return
-            end
             if !@email.nil? && !@password.nil?
               # Upgrade from previous configuration file
               print "Logging in..."
@@ -116,9 +116,10 @@ class DeployTool::Target::EfficientCloud
         rescue Interrupt
           exit 1
         rescue StandardError => e
-          puts "ERROR: #{e.inspect}"
-          puts "\nPlease contact %s support: %s" % [DeployTool::Target::EfficientCloud.cloud_name, DeployTool::Target::EfficientCloud.support_email]
+          $logger.debug "ERROR: #{e.inspect}"
+          $logger.info "\nAn Error occured. Please try again in a Minute or contact %s support: %s" % [DeployTool::Target::EfficientCloud.cloud_name, DeployTool::Target::EfficientCloud.support_email]
           puts ""
+          tries += 1
         end
         @auth = token
         if not token and not handled_error
