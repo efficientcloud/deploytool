@@ -12,6 +12,9 @@ class DeployTool::Command
       puts ""
       puts "Deploy the current directory to the target:"
       puts "  deploy production"
+      puts ""
+      puts "Run a command on the server:"
+      puts "  deploy run production rake db:migrate"
   end
 
   def self.find_target(target_name)
@@ -83,7 +86,13 @@ class DeployTool::Command
     elsif command == "run"
       target_name, target = find_target args.shift
       begin
-        target.exec(args.join(' '))
+        command = args.join(' ').strip
+        if command.empty?
+          puts "ERROR: Must specify command to be run.\n\n"
+          print_help
+          exit 2
+        end
+        target.exec(command)
       rescue => e
         handle_target_exception e
       end
