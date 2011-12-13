@@ -1,13 +1,13 @@
 require 'highline'
-class DeployTool::Target::EfficientCloud < DeployTool::Target
+class DeployTool::Target::HostingStack < DeployTool::Target
   SUPPORTED_API_VERSION = 4
   
   def self.cloud_name
-    @cloud_name || 'Efficient Cloud'
+    @cloud_name || 'HostingStack'
   end
   
   def self.support_email
-    @support_email || 'team@efficientcloud.com'
+    @support_email || 'team@hostingstack.org'
   end
   
   def self.parse_target_spec(target_spec)
@@ -30,7 +30,7 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
   end
   
   def to_h
-    x = {:type => "EfficientCloud", :api_server => @api_client.server, :app_name => @api_client.app_name,}
+    x = {:type => "HostingStack", :api_server => @api_client.server, :app_name => @api_client.app_name,}
     if @api_client.auth_method == :refresh_token
       x.merge({:refresh_token => @api_client.refresh_token})
     else
@@ -39,7 +39,7 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
   end
   
   def to_s
-    "%s@%s (EFC-based platform)" % [@api_client.app_name, @api_client.server]
+    "%s@%s (HS-based platform)" % [@api_client.app_name, @api_client.server]
   end
   
   def initialize(options)
@@ -55,7 +55,7 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
       $logger.debug "Exception: %s\n%s" % [e.message, e.backtrace.join("\n")]
       return false
     end
-    return false unless info && info['name'] == "efc"
+    return false unless info && info['name'] == "hs"
 
     if info['api_version'] > SUPPORTED_API_VERSION
       $logger.error "This version of deploytool is outdated.\nThis server requires at least API Version #{info['api_version']}."
@@ -67,7 +67,7 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
 
   def self.create(target_spec)
     app_name, api_server = parse_target_spec(target_spec)
-    EfficientCloud.new('api_server' => api_server, 'app_name' => app_name)
+    HostingStack.new('api_server' => api_server, 'app_name' => app_name)
   end
 
   def verify
@@ -83,10 +83,10 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
         $logger.error "Application does not exist"
       elsif e.message.start_with?("ERROR")
         puts e.message
-        $logger.info "\nPlease contact %s support and include the above output: %s" % [EfficientCloud.cloud_name, EfficientCloud.support_email]
+        $logger.info "\nPlease contact %s support and include the above output: %s" % [HostingStack.cloud_name, HostingStack.support_email]
       else
         $logger.error "Remote server said: %s" % [e.message]
-        $logger.info "\nPlease contact %s support and include the above output: %s" % [EfficientCloud.cloud_name, EfficientCloud.support_email]
+        $logger.info "\nPlease contact %s support and include the above output: %s" % [HostingStack.cloud_name, HostingStack.support_email]
       end
     end
     exit 5
@@ -135,4 +135,4 @@ class DeployTool::Target::EfficientCloud < DeployTool::Target
   end
 end
 
-require 'deploytool/target/efficientcloud/api_client'
+require 'deploytool/target/hostingstack/api_client'

@@ -8,10 +8,10 @@ require 'oauth2'
 require 'multi_json'
 require 'highline'
 
-CLIENT_ID = 'com.efficientcloud.api.deploytool'
+CLIENT_ID = 'org.hostingstack.api.deploytool'
 CLIENT_SECRET = '11d6b5cc70e4bc9563a3b8dd50dd34f6'
 
-class DeployTool::Target::EfficientCloud
+class DeployTool::Target::HostingStack
   class ApiError < StandardError
     attr_reader :response
     def initialize(response)
@@ -80,7 +80,7 @@ class DeployTool::Target::EfficientCloud
               end
             else
               tries += 1
-              $logger.info "Please specify your %s login data" % [DeployTool::Target::EfficientCloud.cloud_name]
+              $logger.info "Please specify your %s login data" % [DeployTool::Target::HostingStack.cloud_name]
               email =    HighLine.new.ask("E-mail:   ")
               password = HighLine.new.ask("Password: ") {|q| q.echo = "*" }
               print "Authorizing..."
@@ -117,7 +117,7 @@ class DeployTool::Target::EfficientCloud
           exit 1
         rescue StandardError => e
           $logger.debug "ERROR: #{e.inspect}"
-          $logger.info "\nAn Error occured. Please try again in a Minute or contact %s support: %s" % [DeployTool::Target::EfficientCloud.cloud_name, DeployTool::Target::EfficientCloud.support_email]
+          $logger.info "\nAn Error occured. Please try again in a Minute or contact %s support: %s" % [DeployTool::Target::HostingStack.cloud_name, DeployTool::Target::HostingStack.support_email]
           puts ""
           tries += 1
         end

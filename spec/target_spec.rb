@@ -5,7 +5,7 @@ describe DeployTool::Target do
     before do
       stub.any_instance_of(HighLine).ask do |q, |
         if q[/E-mail/]
-          "demo@efficientcloud.com"
+          "demo@hostingstack.org"
         elsif q[/Password/]
           "demo"
         else
@@ -16,9 +16,9 @@ describe DeployTool::Target do
       # TODO: Mock HTTP get method
     end
 
-    ["app10000@api.hostingstack.com", "app10000@hostingstack.com", "app10000@app123.hostingstack.com", "app10000.hostingstack.com"].each do |target_spec|
-      it "should detect #{target_spec} as an Efficient Cloud target" do
-        DeployTool::Target.find(target_spec).class.should == DeployTool::Target::EfficientCloud
+    ["app10000@api.hostingstack.org", "app10000@hostingstack.org", "app10000@app123.hostingstack.org", "app10000.hostingstack.org"].each do |target_spec|
+      it "should detect #{target_spec} as an HostingStack target" do
+        DeployTool::Target.find(target_spec).class.should == DeployTool::Target::HostingStack
       end
     end
 

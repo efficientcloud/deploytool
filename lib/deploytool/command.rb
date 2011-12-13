@@ -30,7 +30,7 @@ class DeployTool::Command
   def self.handle_target_exception(e)
     $logger.debug e.inspect
     $logger.debug e.backtrace
-    $logger.info "\nAn Error (%s) occured. Please contact %s support: %s" % [e.inspect, DeployTool::Target::EfficientCloud.cloud_name, DeployTool::Target::EfficientCloud.support_email]
+    $logger.info "\nAn Error (%s) occured. Please contact %s support: %s" % [e.inspect, DeployTool::Target::HostingStack.cloud_name, DeployTool::Target::HostingStack.support_email]
     exit 2
   end
 

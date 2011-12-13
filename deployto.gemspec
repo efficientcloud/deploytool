@@ -5,11 +5,11 @@ Gem::Specification.new do |gem|
   gem.name    = "deployto"
   gem.version = DeployTool::VERSION
 
-  gem.author      = "Efficient Cloud Ltd"
-  gem.email       = "hello@platformdirectory.com"
-  gem.homepage    = "http://platformdirectory.com/"
-  gem.summary     = "Multi-platform deployment tool."
-  gem.description = "Deployment tool for web application platforms powered by EFC."
+  gem.author      = "HostingStack"
+  gem.email       = "maintainers@hostingstack.org"
+  gem.homepage    = "http://hostingstack.org/"
+  gem.summary     = "PaaS deployment tool."
+  gem.description = "Deployment tool for web application platforms powered by HostingStack."
   gem.executables = "deploy"
 
   gem.files = %x{ git ls-files }.split("\n").select { |d| d =~ %r{^(README|bin/|data/|ext/|lib/|spec/|test/)} }
